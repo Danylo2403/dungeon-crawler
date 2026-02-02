@@ -2,15 +2,28 @@
   --tile: clamp(10px, 3.2vw, 20px);
   --neon-b: #05d9e8;
   --neon-r: #ff2a6d;
+  --grid-line: rgba(5, 217, 232, 0.1);
 }
 
 body {
   margin: 0;
-  background: #01012b;
+  background: #050515; /* Чуть глубже темный цвет */
   color: white;
   font-family: "Courier New", monospace;
   overflow: hidden;
   touch-action: none;
+}
+
+/* Эффект виньетки для атмосферы погружения */
+.game-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.7) 100%);
 }
 
 .game-container {
@@ -19,48 +32,19 @@ body {
   align-items: center;
   height: 100vh;
   justify-content: space-between;
-  padding: 15px;
+  padding: 10px;
   box-sizing: border-box;
-}
-
-.hud {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.hp-container {
-  width: 140px;
-  height: 22px;
-  background: #222;
-  border: 2px solid var(--neon-b);
   position: relative;
-  border-radius: 11px;
-  overflow: hidden;
-}
-
-.hp-fill {
-  height: 100%;
-  background: var(--neon-r);
-  transition: 0.4s;
-  box-shadow: 0 0 10px var(--neon-r);
-}
-
-.hp-text {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  top: 2px;
-  font-size: 12px;
-  font-weight: bold;
+  z-index: 1;
 }
 
 .board-wrapper {
-  padding: 5px;
-  background: var(--neon-b);
+  padding: 3px;
+  background: #000;
+  border: 1px solid rgba(5, 217, 232, 0.4);
   border-radius: 4px;
-  box-shadow: 0 0 20px rgba(5, 217, 232, 0.2);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 1);
+  overflow: hidden;
 }
 
 .board {
@@ -70,56 +54,118 @@ body {
   background: #000;
 }
 
-.controls {
-  width: 100%;
+.tile {
+  width: var(--tile);
+  height: var(--tile);
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  padding-bottom: 20px;
+  justify-content: center;
+  border: 0.5px solid var(--grid-line);
+  box-sizing: border-box;
+  font-size: calc(var(--tile) * 0.8);
+  transition: background 0.3s ease;
 }
 
-.dpad {
-  display: grid;
-  gap: 8px;
-  grid-template-areas: ". u ." "l . r" ". d .";
+/* Подсветка текущего положения игрока */
+.player-tile {
+  background: rgba(5, 217, 232, 0.15) !important;
+  box-shadow: inset 0 0 8px var(--neon-b);
 }
 
-.c-btn {
+.wall {
+  background: #0f172a;
+}
+.floor {
+  background: #020617;
+}
+
+.fog {
+  filter: brightness(0.1) contrast(1.2) blur(0.5px);
+  opacity: 0.8;
+}
+
+/* Кнопка меча с анимацией пульсации */
+.attack-btn {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 42, 109, 0.1);
+  border: 2px solid var(--neon-r);
+  border-radius: 50%;
+  font-size: 32px;
+  box-shadow: 0 0 15px var(--neon-r);
+  cursor: pointer;
+  z-index: 10;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 42, 109, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(255, 42, 109, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 42, 109, 0);
+  }
+}
+
+.attack-btn:active {
+  transform: scale(0.9);
+  background: rgba(255, 42, 109, 0.4);
+}
+
+/* Улучшенный D-Pad */
+.d-btn {
   width: 55px;
   height: 55px;
-  background: rgba(5, 217, 232, 0.1);
-  border: 2px solid var(--neon-b);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--neon-b);
   border-radius: 12px;
-  color: white;
+  color: var(--neon-blue);
   font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 0 rgba(5, 217, 232, 0.2);
 }
 
-.u {
-  grid-area: u;
-}
-.d {
-  grid-area: d;
-}
-.l {
-  grid-area: l;
-}
-.r {
-  grid-area: r;
+.d-btn:active {
+  transform: translateY(2px);
+  box-shadow: none;
+  background: rgba(5, 217, 232, 0.2);
 }
 
-.attack-btn {
-  width: 85px;
-  height: 85px;
-  background: rgba(255, 42, 109, 0.2);
-  border: 3px solid var(--neon-r);
-  border-radius: 50%;
-  font-size: 35px;
-  box-shadow: 0 0 20px var(--neon-r);
-  cursor: pointer;
+.hud {
+  z-index: 10;
+  width: 100%;
+  padding: 0 10px;
 }
 
 .log {
-  color: #f1c40f;
-  font-size: 14px;
-  text-shadow: 0 0 5px #000;
+  color: #fde047;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 12px;
+}
+
+/* Анимация удара меча */
+.attack-btn.swing {
+  animation: sword-swing 0.2s ease-out forwards;
+}
+
+@keyframes sword-swing {
+  0% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(5px) scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
 }

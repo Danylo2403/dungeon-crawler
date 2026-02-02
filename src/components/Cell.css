@@ -1,0 +1,48 @@
+/* HP бар для монстров */
+.enemy-hp-bar {
+  position: absolute;
+  top: 0px; /* Позиционируем над монстром */
+  width: 80%;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.enemy-hp-fill {
+  height: 100%;
+  background: #ff0000;
+  transition: width 0.2s ease-out;
+}
+
+/* Эффект урона "BAM!" */
+.hit-effect {
+  position: absolute;
+  color: yellow;
+  font-weight: bold;
+  font-size: 10px;
+  text-shadow: 0 0 5px red;
+  pointer-events: none; /* Чтобы не мешал кликам */
+  animation: fade-up 0.5s forwards; /* Анимация всплытия и исчезновения */
+}
+
+@keyframes fade-up {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+}
+
+/* Иконки игрока/врагов/выхода */
+.entity {
+  position: relative; /* Чтобы HP бар позиционировался относительно монстра */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
