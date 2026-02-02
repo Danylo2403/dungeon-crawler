@@ -1,171 +1,295 @@
 :root {
-  --tile: clamp(10px, 3.2vw, 20px);
-  --neon-b: #05d9e8;
-  --neon-r: #ff2a6d;
-  --grid-line: rgba(5, 217, 232, 0.1);
+  /* Размер клетки: на телефоне меньше, на ПК больше */
+  --tile-size: clamp(14px, 6vw, 24px);
+  --cyan: #00f2ff;
+  --pink: #ff006a;
+  --bg-dark: #050510;
 }
 
 body {
   margin: 0;
-  background: #050515; /* Чуть глубже темный цвет */
-  color: white;
+  padding: 0;
+  background: #000;
+  color: #fff;
   font-family: "Courier New", monospace;
-  overflow: hidden;
-  touch-action: none;
-}
-
-/* Эффект виньетки для атмосферы погружения */
-.game-container::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.7) 100%);
+  overflow: hidden; /* Чтобы экран не дергался */
 }
 
 .game-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
   height: 100vh;
-  justify-content: space-between;
+  width: 100vw;
   padding: 10px;
   box-sizing: border-box;
-  position: relative;
-  z-index: 1;
+  background: radial-gradient(circle at center, #101025 0%, #000 100%);
 }
 
-.board-wrapper {
-  padding: 3px;
-  background: #000;
-  border: 1px solid rgba(5, 217, 232, 0.4);
-  border-radius: 4px;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 1);
+/* --- ВЕРХНЯЯ ПАНЕЛЬ (HUD) --- */
+.top-ui {
+  height: 90px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.hp-wrap {
+  position: relative;
+  width: 70%;
+  height: 22px;
+  background: #111;
+  border: 2px solid var(--cyan);
+  border-radius: 11px;
   overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+
+.hp-bar {
+  height: 100%;
+  background: var(--cyan);
+  transition: width 0.3s ease;
+}
+
+.hp-wrap span {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  top: 1px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000;
+}
+
+.messages {
+  height: 50px;
+  text-align: center;
+  font-size: 13px;
+  color: #00f2ff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.msg {
+  margin-bottom: 2px;
+}
+
+/* --- ИГРОВОЕ ОКНО --- */
+.viewport {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto; /* Позволяет скроллить, если карта огромная */
+  border: 1px solid #222;
+  background: var(--bg-dark);
+  border-radius: 8px;
+  margin: 10px 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .board {
   display: grid;
-  grid-template-columns: repeat(30, var(--tile));
-  grid-template-rows: repeat(30, var(--tile));
+  grid-template-columns: repeat(30, var(--tile-size));
+  grid-template-rows: repeat(30, var(--tile-size));
   background: #000;
+  border: 1px solid #111;
 }
 
-.tile {
-  width: var(--tile);
-  height: var(--tile);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0.5px solid var(--grid-line);
-  box-sizing: border-box;
-  font-size: calc(var(--tile) * 0.8);
-  transition: background 0.3s ease;
+/* --- КЛЕТКИ (Важно для видимости стен!) --- */
+.tile-wall {
+  background: #2d3748 !important; /* Теперь стены серые, их видно! */
+  border: 0.5px solid #1a202c;
+  box-shadow: inset 0 0 5px #000;
 }
 
-/* Подсветка текущего положения игрока */
-.player-tile {
-  background: rgba(5, 217, 232, 0.15) !important;
-  box-shadow: inset 0 0 8px var(--neon-b);
-}
-
-.wall {
+.tile-floor {
   background: #0f172a;
 }
-.floor {
-  background: #020617;
+
+.tile-exit {
+  background: #10b981 !important;
+  box-shadow: 0 0 15px #10b981;
 }
 
-.fog {
-  filter: brightness(0.1) contrast(1.2) blur(0.5px);
-  opacity: 0.8;
+/* Скрытые клетки */
+.tile-hidden {
+  filter: brightness(0);
 }
 
-/* Кнопка меча с анимацией пульсации */
-.attack-btn {
-  width: 80px;
-  height: 80px;
-  background: rgba(255, 42, 109, 0.1);
-  border: 2px solid var(--neon-r);
-  border-radius: 50%;
-  font-size: 32px;
-  box-shadow: 0 0 15px var(--neon-r);
-  cursor: pointer;
-  z-index: 10;
-  animation: pulse-red 2s infinite;
+/* --- УПРАВЛЕНИЕ --- */
+.controls {
+  height: 200px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-@keyframes pulse-red {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 42, 109, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 15px rgba(255, 42, 109, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 42, 109, 0);
-  }
+.dpad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
-.attack-btn:active {
-  transform: scale(0.9);
-  background: rgba(255, 42, 109, 0.4);
+.dpad-mid {
+  display: flex;
+  gap: 45px; /* Раздвигаем кнопки влево-вправо */
 }
 
-/* Улучшенный D-Pad */
-.d-btn {
-  width: 55px;
-  height: 55px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--neon-b);
+.btn {
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 242, 255, 0.05);
+  border: 2px solid var(--cyan);
   border-radius: 12px;
-  color: var(--neon-blue);
-  font-size: 20px;
+  color: var(--cyan);
+  font-size: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 0 rgba(5, 217, 232, 0.2);
+  touch-action: manipulation;
 }
 
-.d-btn:active {
-  transform: translateY(2px);
-  box-shadow: none;
-  background: rgba(5, 217, 232, 0.2);
+.atk-btn {
+  width: 95px;
+  height: 95px;
+  background: rgba(255, 0, 106, 0.1);
+  border: 3px solid var(--pink);
+  border-radius: 50%;
+  font-size: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px var(--pink);
+  touch-action: manipulation;
 }
 
-.hud {
-  z-index: 10;
-  width: 100%;
-  padding: 0 10px;
+/* --- ЭФФЕКТЫ --- */
+.swing {
+  animation: sword 0.2s ease-out;
 }
-
-.log {
-  color: #fde047;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: 12px;
-}
-
-/* Анимация удара меча */
-.attack-btn.swing {
-  animation: sword-swing 0.2s ease-out forwards;
-}
-
-@keyframes sword-swing {
+@keyframes sword {
   0% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
+    transform: scale(1);
   }
   50% {
-    transform: translateX(5px) scale(1.1);
-    opacity: 0.8;
+    transform: scale(1.3) rotate(-20deg);
   }
   100% {
-    transform: translateX(0) scale(1);
+    transform: scale(1);
+  }
+}
+
+.shake {
+  animation: shake 0.2s ease-in-out;
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+.death {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.death h1 {
+  color: var(--pink);
+  font-size: 50px;
+  text-shadow: 0 0 20px var(--pink);
+}
+
+/* КЛЕТКИ */
+.tile {
+  width: var(--tile-size);
+  height: var(--tile-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    opacity 0.3s ease,
+    filter 0.3s ease;
+}
+
+.tile-wall {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%) !important;
+  border: 1px solid #111;
+  box-shadow: inset 0 0 6px #000;
+  border-radius: 2px;
+}
+
+.tile-floor {
+  background: #0a0a15;
+  border: 0.1px solid rgba(255, 255, 255, 0.03);
+}
+
+.player-tile {
+  z-index: 10;
+  filter: drop-shadow(0 0 10px var(--cyan)) !important;
+}
+
+.entity {
+  font-size: calc(var(--tile-size) * 0.8);
+  user-select: none;
+}
+
+/* Эффект урона BAM! */
+.hit-effect {
+  position: absolute;
+  color: #ff0000;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 0 0 5px black;
+  z-index: 20;
+  animation: hit-float 0.5s ease-out forwards;
+}
+
+@keyframes hit-float {
+  0% {
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
+  100% {
+    transform: translateY(-20px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* HP Бар монстров */
+.enemy-hp-bar {
+  position: absolute;
+  top: -5px;
+  width: 80%;
+  height: 3px;
+  background: #333;
+  border-radius: 2px;
+}
+.enemy-hp-fill {
+  height: 100%;
+  background: #ff4444;
+  transition: width 0.2s;
 }
